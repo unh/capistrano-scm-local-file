@@ -25,7 +25,7 @@ class Capistrano::LocalFile < Capistrano::SCM
     # Upload a local file to the server
     def update
       context.execute :rm, '-rf', "#{deploy_path}/local_file/*"
-      context.upload! fetch(:repo_url), "#{deploy_path}/local_file/#{fetch(:repo_url)}"
+      context.upload! fetch(:repo_url), "#{deploy_path}/local_file/#{fetch(:repo_url)}", chunk_size: 500 * 1024
     end
 
     # Unpack and rsync the contents into release path

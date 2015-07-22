@@ -1,4 +1,14 @@
 namespace :local_file do
+  set :rsync_src, 'tmp/deploy'
+
+  set :rsync_options, %w(
+    --recursive
+    --delete
+    --delete-excluded
+    --exclude .git*
+    --exclude .svn*
+  )
+
   def strategy
     @strategy ||= Capistrano::LocalFile.new(
       self,
@@ -30,7 +40,28 @@ namespace :local_file do
   desc 'Upload the local_file'
   task update: :'local_file:clone' do
     on release_roles :all do
-      strategy.update
+      run_locally do
+        execute :rm, '-rf', fetch(:rsync_src)
+        execute :mkdir, '-p', fetch(:rsync_src)
+        execute :tar, '-xvzf', fetch(:repo_url), fetch(:rsync_src)
+      end
+    end
+
+    last_rsync_to = nil
+    release_roles(:all).each do |role|
+      unless Capistrano::Configuration.env.filter(role).roles_array.empty?
+        run_locally do
+          user = "#{role.user}@" if !role.user.nil?
+          rsync_options = "#{fetch(:rsync_options).join(' ')}"
+          rsync_from = "#{fetch(:rsync_src)}/"
+          rsync_to = "#{user}#{role.hostname}:#{fetch(:rsync_dest_fullpath) || release_path}"
+
+          unless rsync_to == last_rsync_to
+            execute :rsync, rsync_options, rsync_from, rsync_to
+            last_rsync_to = rsync_to
+          end
+        end
+      end
     end
   end
 
