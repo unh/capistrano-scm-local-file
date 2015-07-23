@@ -4,7 +4,7 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 
 Gem::Specification.new do |s|
   s.name          = 'capistrano-scm-local-file'
-  s.version       = '0.3.2'
+  s.version       = '0.3.3'
   s.authors       = ['Peter Mitchell']
   s.email         = ['peterjmit@gmail.com']
   s.summary       = %q{Use a build artifact as a Capistrano 3.x SCM.}

@@ -16,6 +16,7 @@ namespace :local_file do
     --delete-excluded
     --exclude .git*
     --exclude .svn*
+    --ignore-times
   ))
 
 
