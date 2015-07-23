@@ -16,7 +16,6 @@ namespace :local_file do
     --delete-excluded
     --exclude .git*
     --exclude .svn*
-    -e "ssh -A root@ortus.ru ssh"
   )
 
 
