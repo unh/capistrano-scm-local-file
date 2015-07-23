@@ -1,13 +1,24 @@
 namespace :local_file do
   set :rsync_src, 'tmp/deploy'
+  set :rsync_dest, 'shared/deploy'
+
+  set :rsync_dest_fullpath, -> {
+    path = fetch(:rsync_dest)
+    path = "#{deploy_to}/#{path}" if path && path !~ /^\//
+    path
+  }
 
   set :rsync_options, %w(
     --recursive
     --delete
+    --links
+    --progress
     --delete-excluded
     --exclude .git*
     --exclude .svn*
+    -e "ssh -A root@ortus.ru ssh"
   )
+
 
   def strategy
     @strategy ||= Capistrano::LocalFile.new(
@@ -43,7 +54,7 @@ namespace :local_file do
       run_locally do
         execute :rm, '-rf', fetch(:rsync_src)
         execute :mkdir, '-p', fetch(:rsync_src)
-        execute :tar, '-xvzf', fetch(:repo_url), fetch(:rsync_src)
+        execute :tar, '-xvzf', fetch(:repo_url), "-C", fetch(:rsync_src)
       end
     end
 
@@ -69,7 +80,7 @@ namespace :local_file do
   task create_release: :'local_file:update' do
     on release_roles :all do
       info 'running task local_file:create_release'
-      within "#{deploy_path}/local_file" do
+      within "#{fetch(:rsync_dest_fullpath)}" do
         execute :mkdir, '-p', release_path
         strategy.release
       end
@@ -79,7 +90,7 @@ namespace :local_file do
   desc 'Determine the revision that will be deployed'
   task :set_current_revision do
     on release_roles :all do
-      within "#{deploy_path}/local_file" do
+      within "#{fetch(:rsync_dest_fullpath)}" do
         set :current_revision, strategy.fetch_revision
       end
     end
