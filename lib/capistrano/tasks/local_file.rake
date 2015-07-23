@@ -8,7 +8,7 @@ namespace :local_file do
     path
   }
 
-  set :rsync_options, %w(
+  set :rsync_options, fetch(:rsync_options, %w(
     --recursive
     --delete
     --links
@@ -16,7 +16,7 @@ namespace :local_file do
     --delete-excluded
     --exclude .git*
     --exclude .svn*
-  )
+  ))
 
 
   def strategy
